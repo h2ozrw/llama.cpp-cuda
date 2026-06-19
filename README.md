@@ -1,3 +1,10 @@
+# The Purpose of this Fork.
+
+Provides amd64 llama.cpp build using Ubuntu 22.04, cuda 12.4.1.
+
+Only .github/workflows/build-cuda.yml modified, check commit history.
+
+----
 # llama.cpp CUDA Builds
 
 This repository automatically builds [llama.cpp](https://github.com/ggml-org/llama.cpp) with CUDA support for multiple NVIDIA GPU architectures and CUDA versions.
