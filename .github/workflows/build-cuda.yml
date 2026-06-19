@@ -1,9 +1,6 @@
 name: Build llama.cpp with CUDA
 
 on:
-  schedule:
-    # Run daily at 00:00 UTC
-    - cron: '0 0 * * *'
   workflow_dispatch:
     inputs:
       force_build:
@@ -31,10 +28,10 @@ jobs:
           # Get latest release from llama.cpp
           LATEST_RELEASE=$(curl -s https://api.github.com/repos/ggml-org/llama.cpp/releases/latest | jq -r '.tag_name')
           RELEASE_HASH=$(curl -s https://api.github.com/repos/ggml-org/llama.cpp/releases/latest | jq -r '.target_commitish')
-          
+
           echo "Latest llama.cpp release: $LATEST_RELEASE"
           echo "Release hash: $RELEASE_HASH"
-          
+
           # Check if we've already built this release
           if git tag | grep -q "^${LATEST_RELEASE}$"; then
             echo "Release $LATEST_RELEASE already built"
@@ -48,7 +45,7 @@ jobs:
             echo "New release detected: $LATEST_RELEASE"
             echo "should_build=true" >> $GITHUB_OUTPUT
           fi
-          
+
           echo "release_tag=$LATEST_RELEASE" >> $GITHUB_OUTPUT
           echo "release_hash=$RELEASE_HASH" >> $GITHUB_OUTPUT
 
@@ -74,7 +71,7 @@ jobs:
             # builds. Relevant aarch64 GPU contexts (Grace Hopper, Grace
             # Blackwell, DGX Spark) are covered by sm_90 / sm_100 / sm_120.
             architectures: '75-virtual;80-virtual;86-virtual;89-virtual;90-virtual;100-virtual;120-virtual'
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -83,7 +80,7 @@ jobs:
         run: |
           echo "=== Initial Disk Space ==="
           df -h
-          
+
           echo "=== Removing unnecessary packages ==="
           sudo apt-get remove -y '^aspnetcore-.*' || true
           sudo apt-get remove -y '^dotnet-.*' --fix-missing || true
@@ -94,7 +91,7 @@ jobs:
           sudo apt-get remove -y azure-cli google-chrome-stable firefox powershell mono-devel libgl1-mesa-dri --fix-missing || true
           sudo apt-get autoremove -y || true
           sudo apt-get clean || true
-          
+
           echo "=== Removing large directories ==="
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /usr/local/lib/android
@@ -104,10 +101,10 @@ jobs:
           sudo rm -rf /usr/share/swift
           sudo rm -rf /usr/local/.ghcup
           sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-          
+
           # Clean docker system
           docker system prune -af || true
-          
+
           echo "=== After Cleanup ==="
           df -h
 
@@ -115,26 +112,26 @@ jobs:
         run: |
           # Pull Docker image
           docker pull nvidia/cuda:${{ matrix.cuda_tag }}
-          
+
           # Run build in container
           docker run --rm \
             -v $PWD:/workspace \
             nvidia/cuda:${{ matrix.cuda_tag }} \
             bash -c "
               set -e
-              
+
               echo '=== Installing minimal dependencies ==='
               apt-get update -qq
               apt-get install -y --no-install-recommends git cmake ninja-build build-essential libssl-dev ca-certificates
               apt-get clean
               rm -rf /var/lib/apt/lists/*
-              
+
               echo '=== Cloning llama.cpp ==='
               cd /workspace
               git clone --depth 1 --branch ${{ needs.check-release.outputs.release_tag }} https://github.com/ggml-org/llama.cpp.git || \
                 (git clone https://github.com/ggml-org/llama.cpp.git && cd llama.cpp && git checkout ${{ needs.check-release.outputs.release_hash }})
               cd llama.cpp
-              
+
               echo '=== Configuring build with Ninja ==='
               export LIBRARY_PATH="/usr/local/cuda/lib64/stubs${LIBRARY_PATH:+:$LIBRARY_PATH}"
 
@@ -150,10 +147,10 @@ jobs:
                 -DLLAMA_BUILD_EXAMPLES=OFF \
                 -DCMAKE_EXE_LINKER_FLAGS='-Wl,-rpath-link,/usr/local/cuda/lib64/stubs' \
                 -DCMAKE_SHARED_LINKER_FLAGS='-Wl,-rpath-link,/usr/local/cuda/lib64/stubs'
-              
+
               echo '=== Building with Ninja (parallel: all cores) ==='
               cmake --build build --config Release -j\$(nproc)
-              
+
               echo '=== Copying binaries ==='
               cd /workspace
               mkdir -p binaries/cuda-${{ matrix.cuda_version_short }}
@@ -173,17 +170,17 @@ jobs:
 
               echo '=== Build complete ==='
               ls -lh binaries/cuda-${{ matrix.cuda_version_short }}/
-              
+
               echo '=== Cleaning up build directory ==='
               rm -rf llama.cpp
             "
-          
+
           # Remove Docker image to free space
           docker rmi nvidia/cuda:${{ matrix.cuda_tag }} || true
-          
+
           # Fix permissions for files created by root in container
           sudo chown -R $(id -u):$(id -g) $PWD
-          
+
           echo "=== Final disk usage ==="
           df -h
 
@@ -229,12 +226,12 @@ jobs:
           name: llama.cpp ${{ needs.check-release.outputs.release_tag }} with CUDA
           body: |
             # llama.cpp ${{ needs.check-release.outputs.release_tag }} with CUDA Support
-            
+
             Pre-built binaries of llama.cpp with CUDA support for multiple CUDA versions.
-            
+
             **Source:** https://github.com/ggml-org/llama.cpp/releases/tag/${{ needs.check-release.outputs.release_tag }}
             **Commit:** ${{ needs.check-release.outputs.release_hash }}
-            
+
             ## CUDA Versions
             - CUDA 12.8 - GPU compute capabilities: 7.5, 8.0, 8.6, 8.9, 9.0, 10.0, 12.0
 
