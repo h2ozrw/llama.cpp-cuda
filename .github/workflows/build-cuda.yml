@@ -56,21 +56,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cuda_version: ['12.8.1']
+        cuda_version: ['12.4.1']
         arch:
           # Native runners — no QEMU. nvidia/cuda:*-cudnn-devel-ubuntu22.04 is
           # multi-arch on Docker Hub so the same build path runs on both.
-          - { suffix: amd64, runs_on: ubuntu-latest }
-          - { suffix: arm64, runs_on: ubuntu-24.04-arm }
+          - { suffix: amd64, runs_on: ubuntu-22.04 }
         include:
-          - cuda_version: '12.8.1'
-            cuda_version_short: '12.8'
-            cuda_tag: '12.8.1-cudnn-devel-ubuntu22.04'
+          - cuda_version: '12.4.1'
+            cuda_version_short: '12.4'
+            cuda_tag: '12.4.1-cudnn-devel-ubuntu22.04'
             # CUDA compute capabilities target the runtime GPU, not the host
             # CPU arch, so the same list applies to both amd64 and arm64
             # builds. Relevant aarch64 GPU contexts (Grace Hopper, Grace
             # Blackwell, DGX Spark) are covered by sm_90 / sm_100 / sm_120.
-            architectures: '75-virtual;80-virtual;86-virtual;89-virtual;90-virtual;100-virtual;120-virtual'
+            architectures: '75-virtual;80-virtual;86-virtual;89-virtual;90-virtual'
 
     steps:
       - name: Checkout
@@ -233,7 +232,7 @@ jobs:
             **Commit:** ${{ needs.check-release.outputs.release_hash }}
 
             ## CUDA Versions
-            - CUDA 12.8 - GPU compute capabilities: 7.5, 8.0, 8.6, 8.9, 9.0, 10.0, 12.0
+            - CUDA 12.4 - GPU compute capabilities: 7.5, 8.0, 8.6, 8.9, 9.0, 10.0, 12.0
 
             ## Host architectures
             Tarballs are published per host CPU architecture (Linux):
@@ -253,9 +252,9 @@ jobs:
             Download the tarball matching your host CPU arch and CUDA version, then extract:
             ```bash
             # amd64 host
-            tar -xzf llama.cpp-${{ needs.check-release.outputs.release_tag }}-cuda-12.8-amd64.tar.gz
+            tar -xzf llama.cpp-${{ needs.check-release.outputs.release_tag }}-cuda-12.4-amd64.tar.gz
             # arm64 host (e.g. Grace Blackwell)
-            tar -xzf llama.cpp-${{ needs.check-release.outputs.release_tag }}-cuda-12.8-arm64.tar.gz
+            tar -xzf llama.cpp-${{ needs.check-release.outputs.release_tag }}-cuda-12.4-arm64.tar.gz
             ./llama-cli --help
             ```
           files: release-assets/*
