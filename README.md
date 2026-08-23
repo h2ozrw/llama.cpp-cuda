@@ -1,6 +1,6 @@
 # The Purpose of this Fork.
 
-Provides amd64 llama.cpp build using Ubuntu 22.04, cuda 12.4.1.
+Provides amd64 llama.cpp build using Ubuntu 22.04, cuda 12.4.1/13.2.0.
 
 Only .github/workflows/build-cuda.yml modified, check commit history.
 
