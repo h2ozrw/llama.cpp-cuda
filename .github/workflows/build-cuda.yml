@@ -232,7 +232,7 @@ jobs:
             **Commit:** ${{ needs.check-release.outputs.release_hash }}
 
             ## CUDA Versions
-            - CUDA 12.4 - GPU compute capabilities: 7.5, 8.0, 8.6, 8.9, 9.0, 10.0, 12.0
+            - CUDA 12.4 - GPU compute capabilities: 7.5, 8.0, 8.6, 8.9, 9.0
 
             ## Host architectures
             Tarballs are published per host CPU architecture (Linux):
