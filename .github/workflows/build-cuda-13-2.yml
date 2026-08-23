@@ -1,4 +1,4 @@
-name: Build llama.cpp with CUDA
+name: Build llama.cpp with CUDA 13.2.0 Ubuntu 22.04
 
 on:
   workflow_dispatch:
